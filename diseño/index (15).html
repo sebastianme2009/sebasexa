@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Propina</title>
+    <!-- Carga de Tailwind CSS para un diseño limpio y responsive -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Configuración personalizada de Tailwind y fuente Inter */
+        :root {
+            /* Color principal (neutral): Gris oscuro/Piedra 700 */
+            --color-primary: #44403c; 
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Fondo gris muy claro (neutral) */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        /* Estilo base para el botón de Pagar y Calcular */
+        .action-button {
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+        /* Efecto hover utilizando el color neutro oscuro */
+        .action-button:hover {
+            box-shadow: 0 10px 15px -3px rgba(68, 64, 60, 0.3), 0 4px 6px -4px rgba(68, 64, 60, 0.1);
+            transform: translateY(-2px);
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        /* Tono neutro oscuro para acentos y botones */
+                        'custom-neutral': '#44403c', // stone-700
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <!-- Contenedor principal de la calculadora -->
+    <div id="calculator-card" class="bg-white p-8 md:p-10 rounded-xl shadow-2xl w-full max-w-sm border border-gray-100 transform transition-all duration-300 hover:shadow-lg">
+        <h1 class="text-3xl font-extrabold text-gray-800 mb-6 text-center">Calculadora de Propina</h1>
+        <p class="text-gray-500 mb-6 text-center">Calcula un impuesto fijo del 10%.</p>
+
+        <!-- Formulario de Entrada -->
+        <div class="space-y-4">
+            <div>
+                <label for="baseAmount" class="block text-sm font-medium text-gray-700 mb-1">Monto Base (€/$):</label>
+                <input type="number" id="baseAmount" placeholder="Ej: 50.00" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-custom-neutral focus:border-custom-neutral transition duration-150" min="0" step="0.01">
+            </div>
+
+            <!-- Botón de Cálculo (Simula la lógica del backend PHP) -->
+            <button id="calculateBtn" class="w-full py-2 bg-custom-neutral text-white font-semibold rounded-lg hover:bg-stone-800 transition duration-150 ease-in-out action-button">
+                Calcular Impuesto / Propina (10%)
+            </button>
+        </div>
+
+        <!-- Sección de Resultados (Backend Simulated Output) -->
+        <div id="results" class="mt-8 pt-6 border-t border-gray-200 space-y-3 hidden">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Resumen del Pago</h2>
+
+            <div class="flex justify-between items-center text-gray-700">
+                <span class="font-medium">Monto Base:</span>
+                <span id="baseDisplay" class="font-mono text-lg font-semibold"></span>
+            </div>
+
+            <div class="flex justify-between items-center text-gray-700">
+                <span class="font-medium">Impuesto/Propina (10%):</span>
+                <span id="tipDisplay" class="font-mono text-lg font-bold"></span>
+            </div>
+
+            <div class="flex justify-between items-center pt-3 border-t border-dashed border-gray-300 text-gray-800">
+                <span class="font-extrabold text-lg">TOTAL A PAGAR:</span>
+                <span id="totalDisplay" class="font-extrabold text-xl text-custom-neutral"></span>
+            </div>
+        </div>
+
+        <!-- Botón de Pago (Funcionalidad dinámica JS) -->
+        <button id="payBtn" class="w-full mt-6 py-3 bg-custom-neutral text-white font-bold rounded-lg action-button hidden hover:bg-stone-800" disabled>
+            PAGAR
+        </button>
+
+        <!-- Contenedor de Mensajes de ERROR (solo para validación) -->
+        <div id="messageBox" class="mt-6 p-4 bg-red-100 border border-red-300 text-red-800 rounded-lg hidden text-center font-medium transition duration-300">
+            <!-- Los mensajes de error de validación aparecerán aquí -->
+        </div>
+    </div>
+
+    <!-- Modal de Mensaje (Message Book - Para éxito) -->
+    <div id="successModal" class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex justify-center items-center hidden transition-opacity duration-300">
+        <div class="bg-white p-8 rounded-xl shadow-2xl max-w-sm w-full transform scale-100 transition-transform duration-300">
+            <div class="text-center">
+                <!-- Icono de cheque de éxito (neutro/teal) -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-teal-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">¡Transacción Exitosa!</h3>
+                <p id="modalMessageText" class="text-gray-600 mb-6">¡Gracias por su pago! Su transacción ha sido completada exitosamente.</p>
+                <!-- Botón para cerrar el modal -->
+                <button id="closeModalBtn" class="w-full py-2 bg-custom-neutral text-white font-semibold rounded-lg hover:bg-stone-800 transition duration-150 action-button">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- Fin Modal -->
+
+    <script>
+        // Variables globales para elementos del DOM
+        const baseAmountInput = document.getElementById('baseAmount');
+        const calculateBtn = document.getElementById('calculateBtn');
+        const payBtn = document.getElementById('payBtn');
+        const resultsDiv = document.getElementById('results');
+        const baseDisplay = document.getElementById('baseDisplay');
+        const tipDisplay = document.getElementById('tipDisplay');
+        const totalDisplay = document.getElementById('totalDisplay');
+        const messageBox = document.getElementById('messageBox'); // Para mensajes de error/validación
+
+        // Nuevos elementos para el Modal (Message Book)
+        const calculatorCard = document.getElementById('calculator-card');
+        const successModal = document.getElementById('successModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const modalMessageText = document.getElementById('modalMessageText');
+
+        // Constante para el porcentaje de impuesto/propina
+        const TIP_RATE = 0.10; // 10%
+
+        /**
+         * Función que simula la lógica de cálculo del backend (PHP).
+         * Calcula el impuesto fijo del 10% y el total.
+         */
+        function calculateTip() {
+            const amount = parseFloat(baseAmountInput.value);
+
+            // Ocultar modal de éxito si está abierto y limpiar mensajes de error
+            successModal.classList.add('hidden');
+            messageBox.classList.add('hidden'); 
+
+            // Validar la entrada
+            if (isNaN(amount) || amount <= 0) {
+                // Mostrar error usando el contenedor messageBox
+                messageBox.textContent = "Por favor, ingrese un monto base válido.";
+                messageBox.classList.remove('hidden');
+                resultsDiv.classList.add('hidden');
+                payBtn.classList.add('hidden');
+                payBtn.disabled = true;
+                return;
+            }
+
+            // Simulación del cálculo del backend
+            const tip = amount * TIP_RATE;
+            const total = amount + tip;
+
+            // Formatear los resultados para mostrar (usando formato de moneda local)
+            const currencyFormat = new Intl.NumberFormat('es-ES', {
+                style: 'currency',
+                currency: 'EUR', 
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            });
+
+            // Actualizar la sección de resultados
+            baseDisplay.textContent = currencyFormat.format(amount);
+            tipDisplay.textContent = currencyFormat.format(tip);
+            totalDisplay.textContent = currencyFormat.format(total);
+
+            resultsDiv.classList.remove('hidden');
+            payBtn.classList.remove('hidden');
+            payBtn.disabled = false;
+        }
+
+        /**
+         * Función que maneja el pago (funcionalidad dinámica del frontend JS).
+         * Muestra el Modal de agradecimiento (Message Book).
+         */
+        function handlePayment() {
+            // 1. Ocultar la calculadora y sus botones de acción
+            calculatorCard.classList.add('hidden');
+
+            // 2. Mostrar el modal de éxito (Message Book)
+            successModal.classList.remove('hidden');
+            
+            // 3. Limpiar el campo de entrada
+            baseAmountInput.value = ''; 
+        }
+
+        /**
+         * Función para cerrar el modal y restablecer la calculadora.
+         */
+        function closeModal() {
+            successModal.classList.add('hidden');
+            calculatorCard.classList.remove('hidden'); // Mostrar la tarjeta de la calculadora nuevamente
+            resultsDiv.classList.add('hidden');       // Asegurar que los resultados estén ocultos al reiniciar
+            payBtn.classList.add('hidden');           // Asegurar que el botón de pagar esté oculto al reiniciar
+        }
+
+        // Asignación de Event Listeners
+        calculateBtn.addEventListener('click', calculateTip);
+        payBtn.addEventListener('click', handlePayment);
+        closeModalBtn.addEventListener('click', closeModal); // Cierra al hacer clic en el botón "Cerrar"
+
+        // Cierra al hacer clic en el fondo oscuro del modal (overlay)
+        successModal.addEventListener('click', function(e) {
+            if (e.target.id === 'successModal') {
+                closeModal();
+            }
+        });
+
+        // Permitir calcular también al presionar Enter en el campo de monto
+        baseAmountInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault(); // Evita la recarga del formulario
+                calculateTip();
+            }
+        });
+    </script>
+
+</body>
+</html>
